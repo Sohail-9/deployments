@@ -31,13 +31,13 @@ declare -a services=(
 for service in "${services[@]}"
 do
     echo "📦 Building $service..."
-    cd "services/$service"
+    cd "$service"
     
     docker build -t "ecommerce-$service:$VERSION" .
     docker tag "ecommerce-$service:$VERSION" "$ECR_REGISTRY/ecommerce-$service:$VERSION"
     
     echo "✅ $service built successfully"
-    cd ../..
+    cd ..
     echo ""
 done
 
