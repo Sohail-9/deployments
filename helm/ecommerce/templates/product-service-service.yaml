@@ -1,0 +1,13 @@
+{{- if .Values.productService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    app: product-service
+  ports:
+  - port: {{ .Values.productService.service.port }}
+    targetPort: 5001
+{{- end }}

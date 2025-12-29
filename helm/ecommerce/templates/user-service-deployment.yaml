@@ -1,10 +1,11 @@
+{{- if .Values.userService.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-service
-  namespace: ecommerce
+  namespace: {{ .Values.global.namespace }}
 spec:
-  replicas: 2
+  replicas: {{ .Values.userService.replicaCount }}
   selector:
     matchLabels:
       app: user-service
@@ -15,7 +16,8 @@ spec:
     spec:
       containers:
       - name: user-service
-        image: <YOUR_ECR_REGISTRY>/ecommerce-user-service:latest
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.userService.image.repository }}:{{ .Values.global.imageTag }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
         ports:
         - containerPort: 3001
         env:
@@ -26,23 +28,18 @@ spec:
         - name: DB_PORT
           value: "5432"
         - name: DB_NAME
-          value: "userdb"
+          value: {{ .Values.userService.database }}
         - name: DB_USER
-          value: "postgres"
+          value: {{ .Values.databases.postgres.user }}
         - name: DB_PASSWORD
-          value: "postgres"
+          value: {{ .Values.databases.postgres.password }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: jwt-secret
               key: JWT_SECRET
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "300m"
+          {{- toYaml .Values.userService.resources | nindent 10 }}
         livenessProbe:
           httpGet:
             path: /health
@@ -55,15 +52,4 @@ spec:
             port: 3001
           initialDelaySeconds: 10
           periodSeconds: 5
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: user-service
-  namespace: ecommerce
-spec:
-  selector:
-    app: user-service
-  ports:
-  - port: 3001
-    targetPort: 3001
+{{- end }}

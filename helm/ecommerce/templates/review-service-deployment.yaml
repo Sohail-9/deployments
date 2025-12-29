@@ -1,0 +1,42 @@
+{{- if .Values.reviewService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: review-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.reviewService.replicaCount }}
+  selector:
+    matchLabels:
+      app: review-service
+  template:
+    metadata:
+      labels:
+        app: review-service
+    spec:
+      containers:
+      - name: review-service
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.reviewService.image.repository }}:{{ .Values.global.imageTag }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        ports:
+        - containerPort: 3005
+        env:
+        - name: PORT
+          value: "3005"
+        - name: MONGO_URL
+          value: "mongodb://mongodb:27017"
+        resources:
+          {{- toYaml .Values.reviewService.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3005
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3005
+          initialDelaySeconds: 10
+          periodSeconds: 5
+{{- end }}

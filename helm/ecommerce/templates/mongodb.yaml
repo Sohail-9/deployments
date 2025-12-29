@@ -1,20 +1,21 @@
+{{- if .Values.databases.mongodb.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc
-  namespace: ecommerce
+  namespace: {{ .Values.global.namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.databases.mongodb.storageSize }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb
-  namespace: ecommerce
+  namespace: {{ .Values.global.namespace }}
 spec:
   serviceName: mongodb
   replicas: 1
@@ -36,12 +37,7 @@ spec:
         - name: mongodb-storage
           mountPath: /data/db
         resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+          {{- toYaml .Values.databases.mongodb.resources | nindent 10 }}
       volumes:
       - name: mongodb-storage
         persistentVolumeClaim:
@@ -51,7 +47,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mongodb
-  namespace: ecommerce
+  namespace: {{ .Values.global.namespace }}
 spec:
   selector:
     app: mongodb
@@ -59,3 +55,4 @@ spec:
   - port: 27017
     targetPort: 27017
   clusterIP: None
+{{- end }}

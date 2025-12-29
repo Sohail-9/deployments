@@ -1,0 +1,50 @@
+{{- if .Values.inventoryService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.inventoryService.replicaCount }}
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+      - name: inventory-service
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.inventoryService.image.repository }}:{{ .Values.global.imageTag }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        ports:
+        - containerPort: 5002
+        env:
+        - name: PORT
+          value: "5002"
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: {{ .Values.inventoryService.database }}
+        - name: DB_USER
+          value: {{ .Values.databases.postgres.user }}
+        - name: DB_PASSWORD
+          value: {{ .Values.databases.postgres.password }}
+        resources:
+          {{- toYaml .Values.inventoryService.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+{{- end }}

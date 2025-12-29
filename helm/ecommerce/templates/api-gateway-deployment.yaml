@@ -1,0 +1,61 @@
+{{- if .Values.apiGateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.apiGateway.replicaCount }}
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+      - name: api-gateway
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.apiGateway.image.repository }}:{{ .Values.global.imageTag }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PORT
+          value: "3000"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: JWT_SECRET
+        - name: USER_SERVICE_URL
+          value: "http://user-service:3001"
+        - name: PRODUCT_SERVICE_URL
+          value: "http://product-service:5001"
+        - name: ORDER_SERVICE_URL
+          value: "http://order-service:3002"
+        - name: PAYMENT_SERVICE_URL
+          value: "http://payment-service:3003"
+        - name: INVENTORY_SERVICE_URL
+          value: "http://inventory-service:5002"
+        - name: NOTIFICATION_SERVICE_URL
+          value: "http://notification-service:3004"
+        - name: REVIEW_SERVICE_URL
+          value: "http://review-service:3005"
+        - name: ANALYTICS_SERVICE_URL
+          value: "http://analytics-service:5003"
+        resources:
+          {{- toYaml .Values.apiGateway.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+{{- end }}

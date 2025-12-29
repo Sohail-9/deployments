@@ -1,0 +1,232 @@
+# Default values for ecommerce microservices
+# This is a YAML-formatted file.
+
+# Global configuration
+global:
+  namespace: ecommerce
+  imageRegistry: "YOUR_ECR_REGISTRY"
+  imageTag: latest
+  imagePullPolicy: IfNotPresent
+
+# JWT Secret
+jwtSecret: "your-super-secret-jwt-key-change-this-in-production"
+
+# Database configurations
+databases:
+  postgres:
+    enabled: true
+    user: postgres
+    password: postgres
+    storageSize: 10Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  
+  mongodb:
+    enabled: true
+    storageSize: 10Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  
+  redis:
+    enabled: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+# Frontend service
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-frontend
+  service:
+    type: LoadBalancer
+    port: 80
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# API Gateway
+apiGateway:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: ecommerce-api-gateway
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# User Service
+userService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-user-service
+  service:
+    port: 3001
+  database: userdb
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+# Product Service
+productService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-product-service
+  service:
+    port: 5001
+  database: productdb
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+# Order Service
+orderService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-order-service
+  service:
+    port: 3002
+  database: orderdb
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+# Payment Service
+paymentService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-payment-service
+  service:
+    port: 3003
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+
+# Inventory Service
+inventoryService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-inventory-service
+  service:
+    port: 5002
+  database: inventorydb
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# Notification Service
+notificationService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-notification-service
+  service:
+    port: 3004
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+
+# Review Service
+reviewService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-review-service
+  service:
+    port: 3005
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# Analytics Service
+analyticsService:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ecommerce-analytics-service
+  service:
+    port: 5003
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+  hosts:
+    - host: ""
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend: api-gateway
+        - path: /
+          pathType: Prefix
+          backend: frontend

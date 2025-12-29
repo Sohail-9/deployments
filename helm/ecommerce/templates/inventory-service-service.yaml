@@ -1,0 +1,13 @@
+{{- if .Values.inventoryService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    app: inventory-service
+  ports:
+  - port: {{ .Values.inventoryService.service.port }}
+    targetPort: 5002
+{{- end }}

@@ -1,0 +1,13 @@
+{{- if .Values.reviewService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: review-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    app: review-service
+  ports:
+  - port: {{ .Values.reviewService.service.port }}
+    targetPort: 3005
+{{- end }}

@@ -1,0 +1,13 @@
+{{- if .Values.analyticsService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    app: analytics-service
+  ports:
+  - port: {{ .Values.analyticsService.service.port }}
+    targetPort: 5003
+{{- end }}
